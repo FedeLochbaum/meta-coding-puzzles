@@ -1,0 +1,1 @@
+const getSum = (A, B, C) => A + B + C
