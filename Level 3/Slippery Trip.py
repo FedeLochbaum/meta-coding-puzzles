@@ -1,50 +1,49 @@
 from typing import List
-from collections import deque
 
-DIR = { 'DOWN': 'v', 'RIGHT': '>' }
+CELL = { 'DOWN': 'v', 'RIGHT': '>', 'COIN': '*', 'EMPTY': '.' }
 
-def next_pos(R, C, pos, dir):
-  return ((pos[0] + 1) % R, pos[1]) if dir == DIR['DOWN'] else (pos[0], (pos[1] + 1) % C)
+def res_by_analysis(there_coin, there_is_down, max_possible_before_down, next):
+  if max_possible_before_down != 0: return max_possible_before_down + next()
+  elif there_coin: return 1 + next()
+  elif there_is_down: return next()
 
-def coins(R, C, G):
-  _coins = 0
-  pos = (0, 0)
-  visited = set()
-  dir = DIR['DOWN']
+  return 0
 
-  while not pos in visited:
-    visited.add(pos)
-    cell = G[pos[0]][pos[1]]
-
-    if cell != '.':
-      if cell == '*': _coins += 1
-      else: dir = dir = cell
-
-    if pos[0] == R - 1 and dir == DIR['DOWN']: break
-    pos = next_pos(R, C, pos, dir)
-
-  return _coins
-
-def count_of_coins(R, C, G):
-  _coins = 0
-  for i in range(R):
-    G[i] = deque(G[i])
-    for j in range(C):
-      if G[i][j] == '*': _coins += 1
+def max__coins(R, G, r):
+  if r == R: return 0
   
-  return _coins
+  row = G[r] * 2
 
-def getMaxCollectableCoins(R, C, G):
-  _max_possible = count_of_coins(R, C, G)
-  _max = 0
+  there_coin = False
+  there_is_down = False
+  there_is_right = False
+  move_right = False
+  max_possible_before_down = 0
+  coins_before_down = 0
+  all_coins_in_row = 0
+  
+  for i in row:
+    if i == CELL['EMPTY']: there_is_down = True
 
-  for r in range(R):
-    for n in range(C + 1):
-      _max = max(_max, coins(R, C, G))
-      if (_max == _max_possible): return _max_possible
-      G[r].rotate(1)
+    if i == CELL['COIN']:
+      all_coins_in_row += 1
+      there_coin = True
+      if move_right: coins_before_down += 1
+    elif i == CELL['DOWN']:
+      there_is_down = True
+      if move_right:
+        max_possible_before_down = max(max_possible_before_down, coins_before_down)
+        coins_before_down = 0; move_right = False
+    elif i == CELL['RIGHT']: there_is_right = True; move_right = True
+  
+  res = res_by_analysis(there_coin, there_is_down, max_possible_before_down, lambda : max__coins(R, G, r + 1))
 
-  return _max
+  if max_possible_before_down == 0 and there_is_right: res = max(res, all_coins_in_row // 2)
+  
+  return res
+
+def getMaxCollectableall_coins_in_row(R, C, G):
+  return max__coins(R, G, 0)
 
 G1 = [
   ['.','*','*','*'],
@@ -63,10 +62,10 @@ G4 = [
   [ '.', '*', '.', '.', '*', 'v' ]
 ]
 
-r1 = getMaxCollectableCoins(3, 4, G1); print(r1, r1 == 4)
+r1 = getMaxCollectableall_coins_in_row(3, 4, G1); print(r1, r1 == 4)
 
-r2 = getMaxCollectableCoins(3, 3, G2); print(r2, r2 == 4)
+r2 = getMaxCollectableall_coins_in_row(3, 3, G2); print(r2, r2 == 4)
 
-r3 = getMaxCollectableCoins(2, 2, G3); print(r3, r3 == 0)
+r3 = getMaxCollectableall_coins_in_row(2, 2, G3); print(r3, r3 == 0)
 
-r4 = getMaxCollectableCoins(4, 6, G4); print(r4, r4 == 6)
+r4 = getMaxCollectableall_coins_in_row(4, 6, G4); print(r4, r4 == 6)
