@@ -10,7 +10,6 @@ def getSecondsElapsed(C: int, N: int, A: List[int], B: List[int], K: int) -> int
 
   for i in range(N):
     tunnel_length = tunnels[i][1] - tunnels[i][0]
-    if tunnel_length >= remaining_time:
-      return laps * C + tunnels[i][0] + remaining_time
+    if tunnel_length >= remaining_time: return laps * C + tunnels[i][0] + remaining_time
 
     remaining_time -= tunnel_length
