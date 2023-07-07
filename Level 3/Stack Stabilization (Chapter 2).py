@@ -1,19 +1,38 @@
-from typing import List
 
-def min_for(i, j, memo, R, A, B):
-  prev = memo[i - 1][j - 1] if i > 0 else 0
-  temp = prev + ((R[i] - j) * B if j < R[i] else (j - R[i]) * A)
-  return min(memo[i][j - 1], temp) if j > i + 1 else temp
+def get_moves(R, N):
+  pivots = [[]] * N 
+  for j in range(N-1, -1, -1):
+    for i in range(j, -1, -1):
+      v = R[j] - (j - i)
+      if v > i: pivots[i].append(v)
+    pivots[j].append(R[j])
+    pivots[j].sort()
+    pivots[j] = list(set(pivots[j]))
 
-def getMinimumSecondsRequired(N: int, R: List[int], A: int, B: int) -> int:
-  UPPER_BOUND = max(R) + N
-  memo = [[0] * UPPER_BOUND for _ in range(N)]
-  # memo[0][0] = float('inf')
-  for i in range(N):
-    for j in range(i + 1, UPPER_BOUND):
-      memo[i][j] = min_for(i, j, memo, R, A, B)
+  return pivots
+
+def min_using_dp(R, N, i, min_value, moves, A, B, memo):
+  if i == N: return 0
+  
+  if not min_value in memo[i]:
+    p = moves[i]
+    p.append(min_value)
+    _min = float('inf')
+
+    for it in p:
+      if it < min_value: continue
+
+      cost = 0
+      if it > R[i]: cost = (it - R[i]) * A
+      if R[i] > it: cost = (R[i] - it) * B
       
-  return memo[N - 1][UPPER_BOUND - 1]
+      _min = min(_min, cost + min_using_dp(R, N, i + 1, it + 1, moves, A, B, memo))
+
+    memo[i][min_value] = _min
+
+  return memo[i][min_value]
+
+def getMinimumSecondsRequired(N, R, A, B): return min_using_dp(R, N, 0, 1, get_moves(R, N), A, B, [{} for _ in range(N)])
 
 r1 = getMinimumSecondsRequired(5, [2, 5, 3, 6, 5], 1, 1); print(r1, r1 == 5)
 
